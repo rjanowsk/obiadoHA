@@ -6,16 +6,43 @@ Domyślny okres odświeżania: **6 godzin**. Dla kolejnego dziecka dodaj drugi w
 
 ## Instalacja
 
+### Przez HACS (zalecane)
+
+Wymagany jest zainstalowany i skonfigurowany [HACS](https://www.hacs.dev/docs/use/). Repozytorium dodaje się jako niestandardowe:
+
+1. Otwórz **HACS** w Home Assistant.
+2. W menu **⋮ → Repozytoria niestandardowe / Custom repositories** wpisz `https://github.com/rjanowsk/obiadoHA`.
+3. Wybierz typ **Integracja / Integration** i kliknij **Dodaj / Add**.
+4. Wyszukaj **Obiado**, otwórz jego stronę i wybierz **Pobierz / Download**. Jeśli HACS pyta o wersję, wybierz `main`.
+5. Uruchom ponownie Home Assistant.
+6. Przejdź do konfiguracji opisanej poniżej.
+
+HACS pobiera pliki integracji do `custom_components/obiado`. Repozytorium korzysta obecnie z gałęzi `main`, bez wydań GitHub Releases.
+
+### Ręcznie
+
 1. Skopiuj katalog `custom_components/obiado` do `/config/custom_components/obiado` w Home Assistant.
 2. Uruchom ponownie Home Assistant.
-3. Otwórz **Ustawienia → Urządzenia i usługi → Dodaj integrację → Obiado**.
-4. Podaj adres, np. `rpk.obiado.pl`, login i hasło do Obiado, oraz nazwisko i imię dokładnie jak na przycisku wyboru dziecka w portalu, np. `Kowalski Jan`.
-5. Pozostaw 6 godzin lub podaj inny okres od 1 do 168 godzin. Ułamki godzin są obsługiwane.
-6. Powtórz dla `Kowalska Anna`, jeżeli chcesz mieć kalendarze dla kilku dzieci.
+3. Przejdź do konfiguracji opisanej poniżej.
+
+### Konfiguracja w Home Assistant
+
+1. Otwórz **Ustawienia → Urządzenia i usługi → Dodaj integrację → Obiado**.
+2. Podaj adres, np. `rpk.obiado.pl`, login i hasło do Obiado, oraz nazwisko i imię dokładnie jak na przycisku wyboru dziecka w portalu, np. `Kowalski Jan`.
+3. Pozostaw 6 godzin lub podaj inny okres od 1 do 168 godzin. Ułamki godzin są obsługiwane.
+4. Powtórz dla `Kowalska Anna`, jeżeli chcesz mieć kalendarze dla kilku dzieci.
 
 Kalendarze będą dostępne w panelu **Kalendarz**. Rzeczywiste identyfikatory encji sprawdzisz w ustawieniach integracji.
 Interwał możesz później zmienić przyciskiem **Konfiguruj**. Ręczne odświeżenie jest możliwe akcją `homeassistant.update_entity` dla encji kalendarza.
 Zmiana firmy lub dziecka wymaga usunięcia danego wpisu integracji i dodania nowego. W razie wygaśnięcia logowania HA wyświetli formularz ponownego uwierzytelnienia.
+
+### Aktualizacje i przejście z instalacji ręcznej
+
+Aktualizacje pobieraj przez HACS ze strony **Obiado**, a następnie uruchom ponownie Home Assistant. Jeśli pliki były wcześniej kopiowane ręcznie, dodaj repozytorium i pobierz integrację w HACS według powyższych kroków, po czym zrestartuj HA. Istniejące wpisy integracji i kalendarze pozostają skonfigurowane; nie trzeba ponownie dodawać dzieci.
+
+### Diagnostyka
+
+Po aktualizacji plików integracji uruchom ponownie Home Assistant. Jeśli formularz zgłasza „Nieoczekiwany format danych Obiado”, sprawdź **Ustawienia → System → Dzienniki**. Od wersji 0.1.2 wpis `Obiado setup rejected the response` wskazuje etap (`Login/current user`, `Children list`, `Orders list` lub `Monthly basket`) i powód odrzucenia odpowiedzi. Do zgłoszenia błędu wystarczy ten wpis; nie przesyłaj haseł, tokenów ani pełnych odpowiedzi API.
 
 Projekt używa współczesnego API wpisów konfiguracji HA (`runtime_data`, przepływ opcji i reautoryzacja). Zalecany jest aktualny stabilny Home Assistant. Testy uruchamiane na tym komputerze nie obejmują pełnego środowiska HA; patrz „Weryfikacja”.
 

@@ -1,6 +1,7 @@
 """UI configuration, interval options, and credential renewal."""
 
 import hashlib
+import logging
 from datetime import timedelta
 
 import voluptuous as vol
@@ -28,6 +29,8 @@ from .models import (
     normalize_host,
     validate_refresh_hours,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 INTERVAL = NumberSelector(
     NumberSelectorConfig(
@@ -92,7 +95,8 @@ class ObiadoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except ChildNotFound:
                 errors[CONF_CHILD_NAME] = "child_not_found"
-            except InvalidResponse:
+            except InvalidResponse as err:
+                _LOGGER.error("Obiado setup rejected the response: %s", err)
                 errors["base"] = "invalid_response"
             except ObiadoError:
                 errors["base"] = "cannot_connect"
@@ -118,6 +122,9 @@ class ObiadoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except ChildNotFound:
                 errors["base"] = "child_not_found"
+            except InvalidResponse as err:
+                _LOGGER.error("Obiado reauthentication rejected the response: %s", err)
+                errors["base"] = "invalid_response"
             except ObiadoError:
                 errors["base"] = "cannot_connect"
             else:

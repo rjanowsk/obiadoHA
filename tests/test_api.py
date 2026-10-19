@@ -150,3 +150,97 @@ async def test_mutating_endpoint_is_never_requested():
     with pytest.raises(ValueError, match="allowlist"):
         await client(session)._get("/api/frontend/orders/1/cancel")
     assert not session.calls
+
+
+async def test_setup_uses_portal_totals_without_requesting_out_of_range_pages():
+    """Walk login, child lookup, order discovery and basket as one setup request."""
+    session = Session(
+        Response({"token": "test-token"}),
+        Response({"id": 1}),
+        Response(
+            {
+                "items": [{"id": 20, "fullName": {"name": "Testowy Jan"}}],
+                "currentPage": 1,
+                "perPage": 20,
+                "totalResults": 1,
+            }
+        ),
+        Response(
+            {
+                "orders": {
+                    "items": [{"type": "order", "date": "2026-10-19"}],
+                    "currentPage": 1,
+                    "perPage": 20,
+                    "totalResults": 1,
+                }
+            }
+        ),
+        Response({"orders": {"2026-10-19": ["Zupa", "Danie główne"]}}),
+    )
+    api = client(session)
+    child_id = await api.resolve_child("Testowy Jan")
+    days = await api.fetch_orders(child_id, date(2026, 10, 14))
+    assert days[0].day == date(2026, 10, 19)
+    assert days[0].meals == ("Zupa", "Danie główne")
+    assert len(session.calls) == 5
+
+
+async def test_pagination_follows_total_even_when_server_returns_short_pages():
+    api = client(Session())
+    api._get = AsyncMock(
+        side_effect=[
+            {"items": [{"id": 1}], "currentPage": 1, "perPage": 20, "totalResults": 2},
+            {"items": [{"id": 2}], "currentPage": 2, "perPage": 20, "totalResults": 2},
+        ]
+    )
+    assert await api._pages("/api/frontend/orders") == [{"id": 1}, {"id": 2}]
+    assert api._get.call_count == 2
+
+
+@pytest.mark.parametrize(
+    "pages, message",
+    [
+        ([{"items": [], "totalResults": -1}], "Invalid pagination total"),
+        ([{"items": [], "totalResults": True}], "Invalid pagination total"),
+        ([{"items": [], "totalResults": "0"}], "Invalid pagination total"),
+        ([{"items": [{"id": 1}], "totalResults": 0}], "more items"),
+        ([{"items": [], "totalResults": 1}], "ended before"),
+        ([{"items": [{"id": 1}], "currentPage": 2}], "different page"),
+        (
+            [
+                {"items": [{"id": 1}], "totalResults": 2},
+                {"items": [{"id": 2}], "totalResults": 3},
+            ],
+            "total changed",
+        ),
+        (
+            [{"items": [{"id": 1}], "totalResults": 2}, {"items": []}],
+            "total disappeared",
+        ),
+    ],
+)
+async def test_invalid_pagination_does_not_return_partial_results(pages, message):
+    api = client(Session())
+    api._get = AsyncMock(side_effect=pages)
+    with pytest.raises(InvalidResponse, match=message):
+        await api._pages("/api/frontend/orders")
+
+
+async def test_empty_total_is_a_valid_empty_snapshot():
+    api = client(Session())
+    api._get = AsyncMock(return_value={"items": [], "currentPage": 1, "totalResults": 0})
+    assert await api._pages("/api/frontend/orders") == []
+
+
+async def test_invalid_response_identifies_stage_without_account_data():
+    api = client(Session())
+    api._get = AsyncMock(return_value={"id": 1})
+    api._pages = AsyncMock(side_effect=InvalidResponse("Missing paginated items"))
+    with pytest.raises(InvalidResponse, match="Children list: Missing paginated items"):
+        await api.resolve_child("Testowy Jan")
+    with pytest.raises(InvalidResponse, match="Orders list: Missing paginated items"):
+        await api.fetch_orders(20, date(2026, 10, 14))
+    api._pages = AsyncMock(return_value=[])
+    api._get = AsyncMock(return_value={})
+    with pytest.raises(InvalidResponse, match="Monthly basket: Missing orders mapping"):
+        await api.fetch_orders(20, date(2026, 10, 14))

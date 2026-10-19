@@ -1,10 +1,12 @@
 {
   "domain": "obiado",
   "name": "Obiado",
-  "codeowners": [],
+  "codeowners": ["@rjanowsk"],
   "config_flow": true,
+  "documentation": "https://github.com/rjanowsk/obiadoHA#readme",
   "integration_type": "service",
   "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/rjanowsk/obiadoHA/issues",
   "requirements": [],
-  "version": "0.1.1"
+  "version": "0.1.2"
 }

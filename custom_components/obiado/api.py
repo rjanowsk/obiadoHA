@@ -100,13 +100,31 @@ class ObiadoClient:
         """Follow all pages, failing rather than publishing a truncated snapshot."""
         result: list[dict] = []
         seen: set[str] = set()
+        total: int | None = None
         for page in range(1, MAX_PAGES + 1):
             payload = await self._get(path, {**(params or {}), "page": page})
             container = payload.get(nested) if nested and isinstance(payload, dict) else payload
             if not isinstance(container, dict) or not isinstance(container.get("items"), list):
                 raise InvalidResponse("Missing paginated items")
+            # The portal's ListWrapper uses currentPage/perPage/totalResults.
+            # Do not request a page beyond the advertised result count.
+            if "currentPage" in container and (
+                type(container["currentPage"]) is not int or container["currentPage"] != page
+            ):
+                raise InvalidResponse("Portal returned a different page")
+            if "totalResults" in container:
+                advertised_total = container["totalResults"]
+                if type(advertised_total) is not int or advertised_total < 0:
+                    raise InvalidResponse("Invalid pagination total")
+                if total is not None and total != advertised_total:
+                    raise InvalidResponse("Pagination total changed during fetch")
+                total = advertised_total
+            elif total is not None:
+                raise InvalidResponse("Pagination total disappeared during fetch")
             items = container["items"]
             if not items:
+                if total is not None and len(result) != total:
+                    raise InvalidResponse("Portal ended before all results were fetched")
                 return result
             if any(not isinstance(item, dict) for item in items):
                 raise InvalidResponse("Invalid paginated item")
@@ -115,15 +133,26 @@ class ObiadoClient:
                 raise InvalidResponse("Portal repeated a page")
             seen.add(fingerprint)
             result.extend(items)
-            # Do not infer completion from page size: the server controls it.
+            if total is not None:
+                if len(result) > total:
+                    raise InvalidResponse("Portal returned more items than pagination total")
+                if len(result) == total:
+                    return result
+            # Without metadata, require an empty page; never infer from page size.
         raise InvalidResponse("Pagination limit exceeded")
 
     async def resolve_child(self, name: str) -> int:
         async with self._lock:
-            user = await self._get("/api/frontend/auth/currentUser")
+            try:
+                user = await self._get("/api/frontend/auth/currentUser")
+            except InvalidResponse as err:
+                raise InvalidResponse(f"Login/current user: {err}") from err
             if not isinstance(user, dict) or not isinstance(user.get("id"), int):
                 raise InvalidResponse("Missing current user ID")
-            children = await self._pages(f"/api/frontend/parents/{user['id']}/children")
+            try:
+                children = await self._pages(f"/api/frontend/parents/{user['id']}/children")
+            except InvalidResponse as err:
+                raise InvalidResponse(f"Children list: {err}") from err
             matches = []
             for child in children:
                 full_name = child.get("fullName")
@@ -138,9 +167,12 @@ class ObiadoClient:
         async with self._lock:
             # Discover every future month from the account's paginated order list.
             # The basket endpoint is monthly; never impose an arbitrary future horizon.
-            orders = await self._pages(
-                "/api/frontend/orders", nested="orders", params={"dateFrom": cutoff.isoformat()}
-            )
+            try:
+                orders = await self._pages(
+                    "/api/frontend/orders", nested="orders", params={"dateFrom": cutoff.isoformat()}
+                )
+            except InvalidResponse as err:
+                raise InvalidResponse(f"Orders list: {err}") from err
             months = {(cutoff.year, cutoff.month)}
             for order in orders:
                 try:
@@ -158,11 +190,15 @@ class ObiadoClient:
                     raise InvalidResponse("Invalid order list date") from err
             days: dict[date, MealDay] = {}
             for year, month in sorted(months):
-                payload = await self._get(
-                    f"/api/frontend/orders/subjects/child/{child_id}/orders",
-                    {"year": year, "month": month},
-                )
-                for item in parse_orders(payload, year, month):
+                try:
+                    payload = await self._get(
+                        f"/api/frontend/orders/subjects/child/{child_id}/orders",
+                        {"year": year, "month": month},
+                    )
+                    monthly_orders = parse_orders(payload, year, month)
+                except InvalidResponse as err:
+                    raise InvalidResponse(f"Monthly basket: {err}") from err
+                for item in monthly_orders:
                     if item.day >= cutoff:
                         days[item.day] = item
             return sorted(days.values())
