@@ -1,5 +1,10 @@
 # Zmiany
 
+## 0.1.4
+
+- Tytuł wydarzenia zawiera menu, dzięki czemu nazwy posiłków są widoczne również w kartach pokazujących wyłącznie tytuł. Poszczególne pozycje są oddzielone znakiem `·`.
+- W szczegółach wydarzenia każdy posiłek jest osobnym punktem, z nazwą dziecka w nagłówku i dietą w osobnym wierszu. Nieznane formaty opisów zachowują pełną treść.
+
 ## 0.1.3
 
 - Parser koszyka obsługuje opisy posiłków zarówno w tablicy JSON, jak i w wartościach obiektu JSON, zgodnie z iteracją koszyka w portalu. Obejmuje to tablice PHP z nieciągłymi indeksami.

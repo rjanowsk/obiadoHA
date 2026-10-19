@@ -50,7 +50,7 @@ Projekt używa współczesnego API wpisów konfiguracji HA (`runtime_data`, prze
 
 ## Zasady synchronizacji
 
-- Jedno całodniowe wydarzenie na datę: `Obiad — nazwisko i imię`; opis zawiera wszystkie pozycje koszyka z tego dnia, w tym dietę i nazwy dań, jeżeli portal je zwróci.
+- Jedno całodniowe wydarzenie na datę. Tytuł zawiera menu, np. `Obiad — Danie główne 2: zapiekanka z kurczakiem · Napój: sok pomarańczowy`, więc posiłki są widoczne również w kartach wyświetlających sam tytuł. Opis zawiera nazwę dziecka i wszystkie pozycje koszyka w osobnych punktach, z dietą w osobnym wierszu. Nazwy dań i dieta pojawiają się, jeżeli portal je zwróci. Zawijanie długiego tytułu zależy od użytej karty kalendarza.
 - Każde **pełne i poprawne** pobranie zastępuje cały zestaw wydarzeń tego kalendarza. Zmiany zamówień pojawiają się w opisie, a usunięte zamówienia znikają. Poprawny pusty wynik czyści kalendarz.
 - Błąd sieci, logowania, nieznany format lub przerwane stronicowanie nie nadpisują poprzedniego zestawu. Encja sygnalizuje niedostępność.
 - Wydarzenia dla `data < dziś - 5 dni` są usuwane. Wpis z datą dokładnie `dziś - 5 dni` pozostaje. Dla 18.10.2026 pozostają daty od 13.10.2026.

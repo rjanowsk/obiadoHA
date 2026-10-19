@@ -99,7 +99,9 @@ async def test_calendar_all_day_and_exclusive_range(hass, entry):
     assert len(events) == 1
     assert isinstance(events[0].start, date) and not isinstance(events[0].start, datetime)
     assert events[0].end == today + timedelta(days=1)
-    assert events[0].description == "Zupa\nNapój"
+    assert events[0].summary == "Obiad — Zupa · Napój"
+    assert events[0].description == "Posiłki — Testowy Jan\n\n• Zupa\n\n• Napój"
+    assert entity.event.summary == events[0].summary
     assert await entity.async_get_events(hass, start - timedelta(days=1), start) == []
     assert entity.supported_features == 0
 

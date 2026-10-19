@@ -12,6 +12,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import CONF_CHILD_NAME
 from .coordinator import ObiadoCoordinator
+from .event_text import format_event_text
 from .models import MealDay, prune
 
 PARALLEL_UPDATES = 0
@@ -47,11 +48,12 @@ class ObiadoCalendar(CoordinatorEntity[ObiadoCoordinator], CalendarEntity):
         )
 
     def _event(self, item: MealDay) -> CalendarEvent:
+        summary, description = format_event_text(self._child_name, item.meals)
         return CalendarEvent(
             start=item.day,
             end=item.day + timedelta(days=1),
-            summary=f"Obiad — {self._child_name}",
-            description="\n".join(item.meals),
+            summary=summary,
+            description=description,
             uid=f"{self.unique_id}-{item.day.isoformat()}",
         )
 
