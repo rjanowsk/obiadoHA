@@ -1,0 +1,51 @@
+{
+  "title": "Obiado",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Obiado",
+        "description": "Each entry creates a calendar for one child. The integration only reads orders.",
+        "data": {
+          "host": "Catering host (e.g. rpk.obiado.pl)",
+          "username": "Email or phone number",
+          "password": "Password",
+          "child_name": "Child surname and first name",
+          "refresh_hours": "Refresh interval in hours (1–168)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Sign in to Obiado again",
+        "data": {
+          "username": "Email or phone number",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_host": "Enter a catering host under obiado.pl without a path.",
+      "invalid_auth": "Invalid credentials or no access to this catering tenant.",
+      "child_not_found": "No unique matching child. Enter the name exactly as shown in the portal.",
+      "cannot_connect": "Cannot connect to Obiado. Try again.",
+      "invalid_response": "Unexpected Obiado response. Calendar data was not overwritten.",
+      "invalid_interval": "Enter a finite number of hours from 1 to 168."
+    },
+    "abort": {
+      "already_configured": "This child already has a calendar.",
+      "reauth_successful": "Credentials updated.",
+      "wrong_account": "This account does not match the configured child."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Obiado refresh",
+        "data": {
+          "refresh_hours": "Refresh interval in hours (1–168)"
+        }
+      }
+    },
+    "error": {
+      "invalid_interval": "Enter a finite number of hours from 1 to 168."
+    }
+  }
+}

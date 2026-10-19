@@ -1,0 +1,51 @@
+{
+  "title": "Obiado",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Obiado",
+        "description": "Jeden wpis integracji tworzy kalendarz jednego dziecka. Integracja wyłącznie odczytuje zamówienia.",
+        "data": {
+          "host": "Adres firmy cateringowej (np. rpk.obiado.pl)",
+          "username": "E-mail lub numer telefonu",
+          "password": "Hasło",
+          "child_name": "Nazwisko i imię dziecka",
+          "refresh_hours": "Odświeżanie co ile godzin (1–168)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Ponowne logowanie do Obiado",
+        "data": {
+          "username": "E-mail lub numer telefonu",
+          "password": "Hasło"
+        }
+      }
+    },
+    "error": {
+      "invalid_host": "Podaj adres firmy w domenie obiado.pl, bez ścieżki.",
+      "invalid_auth": "Nieprawidłowy login lub hasło albo brak dostępu do firmy.",
+      "child_not_found": "Nie znaleziono jednoznacznie dziecka. Wpisz nazwę dokładnie jak w portalu.",
+      "cannot_connect": "Nie udało się połączyć z Obiado. Spróbuj ponownie.",
+      "invalid_response": "Nieoczekiwany format danych Obiado. Dane kalendarza nie zostały nadpisane.",
+      "invalid_interval": "Podaj liczbę godzin od 1 do 168."
+    },
+    "abort": {
+      "already_configured": "Kalendarz tego dziecka jest już skonfigurowany.",
+      "reauth_successful": "Dane logowania zaktualizowane.",
+      "wrong_account": "Konto nie odpowiada skonfigurowanemu dziecku."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Odświeżanie Obiado",
+        "data": {
+          "refresh_hours": "Odświeżanie co ile godzin (1–168)"
+        }
+      }
+    },
+    "error": {
+      "invalid_interval": "Podaj liczbę godzin od 1 do 168."
+    }
+  }
+}

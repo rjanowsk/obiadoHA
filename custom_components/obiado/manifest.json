@@ -1,0 +1,10 @@
+{
+  "domain": "obiado",
+  "name": "Obiado",
+  "codeowners": [],
+  "config_flow": true,
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "version": "0.1.1"
+}
