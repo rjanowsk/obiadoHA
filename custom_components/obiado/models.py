@@ -69,7 +69,7 @@ class MealDay:
 
 
 def parse_orders(payload: object, year: int, month: int) -> list[MealDay]:
-    """Parse the same date -> list of descriptions mapping as the basket UI."""
+    """Parse the date -> collection of descriptions mapping used by the basket UI."""
     if not isinstance(payload, dict):
         raise InvalidResponse("Missing orders mapping")
     # PHP encodes an empty associative array as [], not {}.
@@ -85,10 +85,21 @@ def parse_orders(payload: object, year: int, month: int) -> list[MealDay]:
             raise InvalidResponse("Invalid order date") from err
         if (day.year, day.month) != (year, month):
             raise InvalidResponse("Order outside requested month")
-        if not isinstance(meals, list) or any(
-            not isinstance(meal, str) or not meal.strip() for meal in meals
-        ):
-            raise InvalidResponse("Invalid meal descriptions")
+        # Vue's basket v-for iterates both arrays and object values. In particular,
+        # PHP arrays with gaps in their indices are encoded as JSON objects.
+        if isinstance(meals, dict):
+            meals = list(meals.values())
+        elif not isinstance(meals, list):
+            raise InvalidResponse(
+                f"Invalid meal descriptions: expected list or object, got {type(meals).__name__}"
+            )
+        for index, meal in enumerate(meals):
+            if not isinstance(meal, str):
+                raise InvalidResponse(
+                    f"Invalid meal descriptions: item {index} expected string, got {type(meal).__name__}"
+                )
+            if not meal.strip():
+                raise InvalidResponse(f"Invalid meal descriptions: item {index} is blank")
         # Descriptions can contain HTML; calendars should only receive plain text.
         descriptions = tuple(unescape(re.sub(r"<[^>]*>", "", meal)).strip() for meal in meals)
         if descriptions:

@@ -91,3 +91,54 @@ def test_empty_and_year_rollover():
         (2027, 2),
     ]
     assert prune([MealDay(date(2026, 1, 1), ("Zupa",))], date(2026, 10, 18)) == []
+
+
+@pytest.mark.parametrize(
+    "meals",
+    [
+        ["<b>Zupa</b> &amp; pieczywo", "Napój"],
+        {"0": "<b>Zupa</b> &amp; pieczywo", "2": "Napój"},
+        {"3": "<b>Zupa</b> &amp; pieczywo", "10": "Napój"},
+        {"soup": "<b>Zupa</b> &amp; pieczywo", "drink": "Napój"},
+    ],
+)
+def test_basket_accepts_array_and_object_values_without_losing_descriptions(meals):
+    assert parse_orders({"orders": {"2026-10-19": meals}}, 2026, 10) == [
+        MealDay(date(2026, 10, 19), ("Zupa & pieczywo", "Napój"))
+    ]
+
+
+def test_basket_can_mix_arrays_objects_and_empty_days():
+    assert parse_orders(
+        {
+            "orders": {
+                "2026-10-19": ["Zupa"],
+                "2026-10-20": {"1": "Obiad", "4": "Napój"},
+                "2026-10-21": {},
+                "2026-10-22": [],
+            }
+        },
+        2026,
+        10,
+    ) == [
+        MealDay(date(2026, 10, 19), ("Zupa",)),
+        MealDay(date(2026, 10, 20), ("Obiad", "Napój")),
+    ]
+
+
+@pytest.mark.parametrize(
+    "meals, detail",
+    [
+        ("private meal text", "expected list or object, got str"),
+        (None, "expected list or object, got NoneType"),
+        ({"0": "Private meal", "2": None}, "item 1 expected string, got NoneType"),
+        ({"private-key": {"private-field": "private meal"}}, "item 0 expected string, got dict"),
+        (["Private meal", 42], "item 1 expected string, got int"),
+        (["Private meal", "  "], "item 1 is blank"),
+    ],
+)
+def test_invalid_meals_report_only_shape_and_reject_partial_snapshot(meals, detail):
+    with pytest.raises(InvalidResponse) as error:
+        parse_orders({"orders": {"2026-10-18": ["Valid"], "2026-10-19": meals}}, 2026, 10)
+    assert str(error.value) == f"Invalid meal descriptions: {detail}"
+    assert "private" not in str(error.value).lower()

@@ -175,7 +175,7 @@ async def test_setup_uses_portal_totals_without_requesting_out_of_range_pages():
                 }
             }
         ),
-        Response({"orders": {"2026-10-19": ["Zupa", "Danie główne"]}}),
+        Response({"orders": {"2026-10-19": {"0": "Zupa", "2": "Danie główne"}}}),
     )
     api = client(session)
     child_id = await api.resolve_child("Testowy Jan")

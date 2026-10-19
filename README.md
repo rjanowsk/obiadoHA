@@ -44,6 +44,8 @@ Aktualizacje pobieraj przez HACS ze strony **Obiado**, a następnie uruchom pono
 
 Po aktualizacji plików integracji uruchom ponownie Home Assistant. Jeśli formularz zgłasza „Nieoczekiwany format danych Obiado”, sprawdź **Ustawienia → System → Dzienniki**. Od wersji 0.1.2 wpis `Obiado setup rejected the response` wskazuje etap (`Login/current user`, `Children list`, `Orders list` lub `Monthly basket`) i powód odrzucenia odpowiedzi. Do zgłoszenia błędu wystarczy ten wpis; nie przesyłaj haseł, tokenów ani pełnych odpowiedzi API.
 
+Wersja 0.1.3 obsługuje również opisy posiłków zapisane jako wartości obiektu JSON. Jeśli nadal występuje `Monthly basket: Invalid meal descriptions`, prześlij cały ten wpis: wskazuje on teraz typ nieobsługiwanej wartości lub indeks pustego opisu.
+
 Projekt używa współczesnego API wpisów konfiguracji HA (`runtime_data`, przepływ opcji i reautoryzacja). Zalecany jest aktualny stabilny Home Assistant. Testy uruchamiane na tym komputerze nie obejmują pełnego środowiska HA; patrz „Weryfikacja”.
 
 ## Zasady synchronizacji

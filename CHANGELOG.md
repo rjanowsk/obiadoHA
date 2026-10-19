@@ -1,5 +1,10 @@
 # Zmiany
 
+## 0.1.3
+
+- Parser koszyka obsługuje opisy posiłków zarówno w tablicy JSON, jak i w wartościach obiektu JSON, zgodnie z iteracją koszyka w portalu. Obejmuje to tablice PHP z nieciągłymi indeksami.
+- Błąd `Invalid meal descriptions` wskazuje teraz nieobsługiwany typ danych lub indeks błędnego opisu, bez treści posiłków, kluczy odpowiedzi i danych konta. Nieprawidłowy opis nadal przerywa pobieranie całego zestawu.
+
 ## 0.1.2
 
 - Dodano konfigurację HACS, adresy dokumentacji i zgłoszeń błędów oraz instrukcję instalacji i aktualizacji przez repozytorium niestandardowe.
