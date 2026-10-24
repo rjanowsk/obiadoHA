@@ -68,8 +68,6 @@ Login i hasło przechowuje Home Assistant w swoim wpisie konfiguracji (standardo
 
 Na zalogowanym portalu sprawdzono wybór dziecka i widok koszyka. Protokół API ustalono z publicznego kodu aplikacji Obiado: logowanie `username/password`, token Bearer, nagłówek `X-Tenant-Slug`, lista dzieci `fullName.name`, koszyk `orders: {data: [opisy]}`.
 
-**Nie przeprowadzono jeszcze pełnego testu integracji na działającym Home Assistant ani logowania klienta Python na rzeczywistym koncie.** Sesja przeglądarki nie jest przekazywana do integracji. Formularz HA sprawdza logowanie i pełne pobranie przed zapisaniem konfiguracji. Przed użyciem produkcyjnym zweryfikuj oba kalendarze względem koszyka.
-
 Obiado nie udostępnia tu potwierdzonego, wersjonowanego kontraktu API. Zmiana portalu może wymagać aktualizacji klienta. Nieznana odpowiedź zatrzymuje synchronizację zamiast publikować niepełny wynik. Konto musi mieć dostęp rodzica do dziecka. Nazwa musi wskazywać dokładnie jedno dziecko.
 
 Testy lokalne (Python 3.12+, również Windows):
